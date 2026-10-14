@@ -1,0 +1,22 @@
+{
+  "id": "CIV-0006",
+  "revision": 1,
+  "idempotency_key": "test-live-github-push-01",
+  "title": "Kinh nghiệm nạp GitHub tự động",
+  "lifecycle": "active",
+  "verification": "verified_offline",
+  "semantic_status": "semantic_pending",
+  "civil_groups": [
+    "Automation/API"
+  ],
+  "plugins": [],
+  "created_at": "2026-10-14T02:02:37.144825Z",
+  "updated_at": "2026-10-14T02:02:37.144825Z",
+  "last_verified_at": null,
+  "related_to": [],
+  "conflicts_with": [],
+  "supersedes": null,
+  "sensitivity": "default",
+  "project": null,
+  "civil_version": null
+}
