@@ -121,9 +121,9 @@ def git_commit_and_push(
     if not is_git_repo(target_dir):
         return {"status": "not_git_repo", "message": "Chưa khởi tạo Git."}
 
-    # 1. Add data/cases/ và data/taxonomy/ nếu tồn tại
+    # 1. Add data/cases/, data/evidence/ và data/taxonomy/ nếu tồn tại
     add_paths = []
-    for rel in ["data/cases", "data/taxonomy"]:
+    for rel in ["data/cases", "data/evidence", "data/taxonomy"]:
         if (target_dir / rel).exists():
             add_paths.append(rel)
     if not add_paths:

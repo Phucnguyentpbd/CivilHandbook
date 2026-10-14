@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="vi" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Civil Notebook — Sổ tay Kỹ thuật Civil 3D & AutoCAD</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            blueprint: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              500: '#0ea5e9',
+              600: '#0284c7',
+              700: '#0369a1',
+            },
+            cad: {
+              bg: '#0c1017',
+              sidebar: '#131822',
+              card: '#18202d',
+              border: '#232d3f',
+              hover: '#1e293b',
+              accent: '#38bdf8',
+              amber: '#f59e0b',
+              emerald: '#10b981',
+              rose: '#f43f5e',
+            }
+          },
+          fontFamily: {
+            mono: ['JetBrains Mono', 'Fira Code', 'Consolas', 'monospace'],
+            sans: ['Inter', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons & Markdown Libraries -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
+
+  <style>
+    /* Custom scrollbars */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #263346; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #3b4e6b; }
+    
+    /* Code block styling */
+    pre code {
+      font-family: 'JetBrains Mono', Consolas, monospace;
+      font-size: 0.875rem;
+    }
+    
+    /* CAD Badge Glow */
+    .cad-glow {
+      box-shadow: 0 0 15px rgba(56, 189, 248, 0.15);
+    }
+  </style>
+</head>
+<body class="bg-[#0c1017] text-slate-200 font-sans antialiased h-screen flex flex-col overflow-hidden select-none">
+
+  <!-- ─── TOPBAR HEADER ──────────────────────────────────────────────────────── -->
+  <header class="h-14 border-b border-[#232d3f] bg-[#131822] px-4 flex items-center justify-between shrink-0 z-20">
+    <div class="flex items-center space-x-3">
+      <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-sky-500 to-blue-600 flex items-center justify-center shadow-lg shadow-sky-500/20 text-white font-bold text-base">
+        <i data-lucide="compass" class="w-5 h-5"></i>
+      </div>
+      <div>
+        <div class="flex items-center space-x-2">
+          <span class="font-bold text-white tracking-wide text-sm">CIVIL NOTEBOOK</span>
+          <span class="px-1.5 py-0.5 text-[10px] uppercase font-semibold bg-sky-950 text-sky-400 border border-sky-800 rounded">v1.0 Pro</span>
+        </div>
+        <div class="text-[11px] text-slate-400">Sổ tay kinh nghiệm & giải pháp kỹ thuật Civil 3D</div>
+      </div>
+    </div>
+
+    <!-- Center Search Bar Quick Switcher (Ctrl+K) -->
+    <div class="flex-1 max-w-md mx-6">
+      <button onclick="openSearchModal()" class="w-full flex items-center justify-between px-3.5 py-1.5 text-xs text-slate-400 bg-[#0c1017] hover:bg-[#18202d] border border-[#232d3f] rounded-lg transition-all shadow-inner group">
+        <div class="flex items-center space-x-2">
+          <i data-lucide="search" class="w-4 h-4 text-slate-500 group-hover:text-sky-400"></i>
+          <span>Tìm nhanh theo lệnh, lỗi, giải pháp...</span>
+        </div>
+        <kbd class="px-1.5 py-0.5 text-[10px] bg-[#1a2332] text-slate-300 border border-[#2d3a4f] rounded">Ctrl + K</kbd>
+      </button>
+    </div>
+
+    <!-- Right Actions -->
+    <div class="flex items-center space-x-2.5">
+      <!-- Git Sync Status Indicator -->
+      <div id="gitStatusPill" class="flex items-center space-x-1.5 px-2.5 py-1 text-xs rounded-full bg-emerald-950/60 border border-emerald-800/60 text-emerald-400">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span id="gitStatusText" class="text-[11px] font-medium">GitHub: origin/main</span>
+      </div>
+
+      <!-- Sync Button -->
+      <button onclick="triggerSync()" id="btnSync" title="Đồng bộ 2 chiều với GitHub (Pull ca mới nhất & Push)" class="flex items-center space-x-1.5 px-3 py-1.5 text-xs font-medium text-slate-200 bg-[#18202d] hover:bg-[#232d3f] border border-[#232d3f] rounded-lg transition-colors">
+        <i data-lucide="refresh-cw" id="iconSync" class="w-3.5 h-3.5 text-sky-400"></i>
+        <span>Đồng bộ</span>
+      </button>
+
+      <!-- New Case Button -->
+      <button onclick="openCreateModal()" class="flex items-center space-x-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-500 hover:to-blue-500 rounded-lg shadow-md shadow-sky-600/20 transition-all">
+        <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+        <span>+ Ghi ca mới</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ─── MAIN WORKSPACE (2 COLUMNS) ─────────────────────────────────────────── -->
+  <div class="flex-1 flex overflow-hidden">
+    
+    <!-- LEFT SIDEBAR: Chuyên mục & Danh sách Ca -->
+    <aside class="w-80 border-r border-[#232d3f] bg-[#131822] flex flex-col shrink-0">
+      
+      <!-- Bộ lọc Chuyên mục Civil (Dropdown / Pill) -->
+      <div class="p-3 border-b border-[#232d3f]">
+        <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Nhóm Kỹ Thuật Civil</label>
+        <div class="relative">
+          <select id="groupFilter" onchange="onGroupFilterChange()" class="w-full text-xs bg-[#0c1017] text-slate-200 border border-[#232d3f] rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-sky-500 appearance-none cursor-pointer">
+            <option value="">📂 Tất cả các nhóm (All Groups)</option>
+            <!-- Sẽ được fill bằng JavaScript -->
+          </select>
+          <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400 absolute right-2.5 top-2.5 pointer-events-none"></i>
+        </div>
+      </div>
+
+      <!-- Quick Search Filter in List -->
+      <div class="px-3 pt-2 pb-1">
+        <div class="relative">
+          <input type="text" id="sidebarSearchInput" oninput="debounceSidebarSearch()" placeholder="Lọc danh sách..." class="w-full text-xs bg-[#0c1017] text-slate-200 border border-[#232d3f] rounded-md pl-8 pr-2.5 py-1.5 focus:outline-none focus:border-sky-500">
+          <i data-lucide="filter" class="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-2"></i>
+        </div>
+      </div>
+
+      <!-- Danh sách Thẻ Cases -->
+      <div id="casesListContainer" class="flex-1 overflow-y-auto p-2 space-y-1.5">
+        <!-- Loading Skeleton -->
+        <div class="p-3 rounded-lg border border-[#232d3f] bg-[#18202d] animate-pulse">
+          <div class="h-4 bg-slate-700 rounded w-2/3 mb-2"></div>
+          <div class="h-3 bg-slate-800 rounded w-full mb-1"></div>
+          <div class="h-3 bg-slate-800 rounded w-1/2"></div>
+        </div>
+      </div>
+
+      <!-- Sidebar Footer (Tổng số ca) -->
+      <div class="p-2.5 border-t border-[#232d3f] bg-[#0c1017] flex items-center justify-between text-[11px] text-slate-400">
+        <span id="caseCountBadge">Tổng số: 0 ca</span>
+        <span class="text-slate-500">Sẵn sàng tra cứu</span>
+      </div>
+    </aside>
+
+    <!-- RIGHT CANVAS: Chi tiết Ca Kinh Nghiệm (Viewer & Action) -->
+    <main class="flex-1 bg-[#0c1017] flex flex-col overflow-hidden">
+      
+      <!-- Case Detail View Container -->
+      <div id="caseDetailView" class="flex-1 overflow-y-auto p-6 max-w-4xl mx-auto w-full">
+        <!-- Nội dung chi tiết sẽ render động vào đây -->
+        <div class="flex flex-col items-center justify-center h-full text-slate-500 space-y-3">
+          <i data-lucide="book-open" class="w-12 h-12 text-slate-600"></i>
+          <p class="text-sm">Chọn một ca kinh nghiệm ở danh sách bên trái hoặc nhấn <kbd class="px-1.5 py-0.5 bg-[#18202d] border border-[#232d3f] rounded text-slate-300">Ctrl + K</kbd> để tìm kiếm</p>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- ─── MODAL: SEARCH QUICK SWITCHER (Ctrl+K) ─────────────────────────────── -->
+  <div id="searchModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-start justify-center pt-20 hidden">
+    <div class="bg-[#131822] border border-[#2d3a4f] rounded-xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col cad-glow" onclick="event.stopPropagation()">
+      <div class="p-3.5 border-b border-[#232d3f] flex items-center space-x-3 bg-[#18202d]">
+        <i data-lucide="search" class="w-5 h-5 text-sky-400"></i>
+        <input type="text" id="modalSearchInput" oninput="debounceModalSearch()" placeholder="Nhập từ khóa (vd: Lock to Station, cọc trắc ngang, RE, vỡ nét, font chữ...)" class="flex-1 bg-transparent text-sm text-white placeholder-slate-400 focus:outline-none">
+        <kbd onclick="closeSearchModal()" class="px-1.5 py-0.5 text-[10px] bg-[#0c1017] text-slate-400 border border-[#232d3f] rounded cursor-pointer hover:bg-slate-800">ESC</kbd>
+      </div>
+
+      <!-- Kết quả tìm kiếm trong Modal -->
+      <div id="modalSearchResults" class="max-h-96 overflow-y-auto p-2 space-y-1 divide-y divide-[#1e293b]/50">
+        <div class="p-4 text-center text-xs text-slate-400">Gõ từ khóa để tìm kiếm nhanh trong toàn bộ Sổ tay Civil...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── MODAL: TẠO MỚI / CHỈNH SỬA CA KINH NGHIỆM ──────────────────────────── -->
+  <div id="editorModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-[#131822] border border-[#2d3a4f] rounded-xl shadow-2xl w-full max-w-4xl max-h-[92vh] flex flex-col overflow-hidden cad-glow">
+      
+      <!-- Editor Header -->
+      <div class="px-5 py-3.5 border-b border-[#232d3f] bg-[#18202d] flex items-center justify-between">
+        <div class="flex items-center space-x-2">
+          <i data-lucide="file-edit" class="w-5 h-5 text-sky-400"></i>
+          <h3 id="editorModalTitle" class="text-sm font-bold text-white">Ghi nhận Ca Kinh nghiệm Civil 3D Mới</h3>
+        </div>
+        <button onclick="closeEditorModal()" class="text-slate-400 hover:text-white">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Editor Body Form -->
+      <div class="flex-1 overflow-y-auto p-5 space-y-4">
+        
+        <!-- Tiêu đề & Nhóm -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="md:col-span-2">
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Tiêu đề kinh nghiệm / Giải pháp <span class="text-rose-400">*</span></label>
+            <input type="text" id="formTitle" placeholder="Ví dụ: Giữ nguyên tọa độ cọc Sample Line khi nắn chỉnh tim tuyến" class="w-full text-xs bg-[#0c1017] border border-[#232d3f] rounded-lg px-3 py-2 text-white focus:outline-none focus:border-sky-500">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Nhóm Kỹ thuật Civil <span class="text-rose-400">*</span></label>
+            <select id="formCivilGroup" class="w-full text-xs bg-[#0c1017] border border-[#232d3f] rounded-lg px-3 py-2 text-white focus:outline-none focus:border-sky-500">
+              <!-- Render động -->
+            </select>
+          </div>
+        </div>
+
+        <!-- Tóm tắt ngắn 1-2 câu -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Tóm tắt ngắn gọn <span class="text-rose-400">*</span></label>
+          <input type="text" id="formSummary" placeholder="Mở khóa Lock to Station = False để ghim cọc vào tọa độ X, Y..." class="w-full text-xs bg-[#0c1017] border border-[#232d3f] rounded-lg px-3 py-2 text-white focus:outline-none focus:border-sky-500">
+        </div>
+
+        <!-- Vấn đề & Nguyên nhân (2 cột) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-amber-400 mb-1">⚠️ Vấn đề / Hiện tượng lỗi <span class="text-rose-400">*</span></label>
+            <textarea id="formProblem" rows="3" placeholder="Mô tả hiện tượng gặp phải..." class="w-full text-xs bg-[#0c1017] border border-[#232d3f] rounded-lg p-2.5 text-white focus:outline-none focus:border-amber-500 font-mono"></textarea>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-sky-400 mb-1">💡 Nguyên nhân kỹ thuật</label>
+            <textarea id="formCause" rows="3" placeholder="Vì sao xảy ra hiện tượng này..." class="w-full text-xs bg-[#0c1017] border border-[#232d3f] rounded-lg p-2.5 text-white focus:outline-none focus:border-sky-500 font-mono"></textarea>
+          </div>
+        </div>
+
+        <!-- Quy trình xử lý từng bước (Steps) + Vùng dán ảnh CAD -->
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <label class="text-xs font-semibold text-emerald-400">🛠️ Các bước xử lý chuẩn (Hỗ trợ Markdown & Dán ảnh CAD)</label>
+            <span class="text-[11px] text-slate-400">💡 Mẹo: Bấm <kbd class="px-1 bg-[#0c1017] border border-slate-700 rounded text-slate-300">Ctrl + V</kbd> để dán ảnh chụp màn hình</span>
+          </div>
+          <textarea id="formSteps" rows="8" placeholder="Bước 1: Chọn cọc...&#10;Bước 2: Mở Properties (Ctrl+1)...&#10;Bước 3: Đổi Lock to Station = False..." class="w-full text-xs bg-[#0c1017] border border-[#232d3f] rounded-lg p-3 text-white focus:outline-none focus:border-emerald-500 font-mono"></textarea>
+        </div>
+
+        <!-- Cảnh báo & Phiên bản áp dụng -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-rose-400 mb-1">🛑 Cảnh báo / Rủi ro cần tránh</label>
+            <input type="text" id="formWarnings" placeholder="Nhớ khóa lại True sau khi nắn tim tuyến, Rebuild Corridor..." class="w-full text-xs bg-[#0c1017] border border-[#232d3f] rounded-lg px-3 py-2 text-white focus:outline-none focus:border-rose-500">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Phiên bản Civil 3D áp dụng</label>
+            <input type="text" id="formCivilVersion" value="Mọi phiên bản Civil 3D (2020-2027)" class="w-full text-xs bg-[#0c1017] border border-[#232d3f] rounded-lg px-3 py-2 text-white focus:outline-none focus:border-sky-500">
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Editor Footer Actions -->
+      <div class="px-5 py-3 border-t border-[#232d3f] bg-[#18202d] flex items-center justify-between">
+        <div class="text-[11px] text-slate-400 flex items-center space-x-2">
+          <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i>
+          <span>Tự động commit và đẩy (Push) đồng bộ lên GitHub ngay khi lưu</span>
+        </div>
+        <div class="flex items-center space-x-3">
+          <button onclick="closeEditorModal()" class="px-4 py-1.5 text-xs font-medium text-slate-300 hover:text-white bg-[#0c1017] border border-[#232d3f] rounded-lg transition-colors">Hủy</button>
+          <button onclick="submitCaseForm()" id="btnSaveCase" class="flex items-center space-x-1.5 px-4 py-1.5 text-xs font-semibold text-white bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-500 hover:to-blue-500 rounded-lg shadow-lg shadow-sky-600/30 transition-all">
+            <i data-lucide="save" class="w-4 h-4"></i>
+            <span>Lưu & Đẩy lên GitHub</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ─── TOAST NOTIFICATION NOTIFICATION CONTAINER ────────────────────────── -->
+  <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+  <!-- ─── JAVASCRIPT LOGIC ──────────────────────────────────────────────────── -->
+  <script>
+    // State toàn cục
+    let currentCases = [];
+    let selectedCaseId = null;
+    let editingCaseId = null;
+    let editingExpectedRev = 1;
+    let taxonomyGroups = [];
+
+    // Khởi động ứng dụng khi tải trang
+    document.addEventListener("DOMContentLoaded", async () => {
+      lucide.createIcons();
+      await fetchTaxonomy();
+      await fetchSystemStatus();
+      await loadCasesList();
+      setupClipboardPasteListener();
+      setupKeyboardShortcuts();
+    });
+
+    // 1. Phím tắt toàn cục
+    function setupKeyboardShortcuts() {
+      document.addEventListener("keydown", (e) => {
+        // Ctrl + K -> Mở tìm kiếm
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+          e.preventDefault();
+          openSearchModal();
+        }
+        // Ctrl + N -> Tạo ca mới
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'n') {
+          e.preventDefault();
+          openCreateModal();
+        }
+        // ESC -> Đóng Modal
+        if (e.key === 'Escape') {
+          closeSearchModal();
+          closeEditorModal();
+        }
+      });
+    }
+
+    // 2. Lắng nghe dán ảnh màn hình CAD (Ctrl + V)
+    function setupClipboardPasteListener() {
+      const stepsTextarea = document.getElementById("formSteps");
+      stepsTextarea.addEventListener("paste", async (e) => {
+        const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+        for (let item of items) {
+          if (item.kind === 'file' && item.type.startsWith('image/')) {
+            e.preventDefault();
+            const blob = item.getAsFile();
+            const reader = new FileReader();
+            reader.onload = async (event) => {
+              const base64Data = event.target.result;
+              showToast("Đang tải ảnh chụp màn hình lên máy chủ...", "info");
+              try {
+                const res = await fetch("/api/upload-clipboard", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ image_base64: base64Data })
+                });
+                const data = await res.json();
+                if (data.status === "success") {
+                  // Chèn markdown vào vị trí con trỏ
+                  const cursorPos = stepsTextarea.selectionStart;
+                  const textBefore = stepsTextarea.value.substring(0, cursorPos);
+                  const textAfter = stepsTextarea.value.substring(cursorPos);
+                  stepsTextarea.value = textBefore + `\n\n${data.markdown}\n\n` + textAfter;
+                  showToast("📸 Đã dán ảnh CAD thành công!", "success");
+                }
+              } catch (err) {
+                showToast("Lỗi tải ảnh: " + err.message, "error");
+              }
+            };
+            reader.readAsDataURL(blob);
+            break;
+          }
+        }
+      });
+    }
+
+    // 3. Tải danh mục chuyên môn
+    async function fetchTaxonomy() {
+      try {
+        const res = await fetch("/api/taxonomy");
+        const data = await res.json();
+        taxonomyGroups = data.groups || [];
+
+        const selectFilter = document.getElementById("groupFilter");
+        const selectForm = document.getElementById("formCivilGroup");
+
+        taxonomyGroups.forEach(g => {
+          // Add vào Filter
+          const opt1 = document.createElement("option");
+          opt1.value = g.key;
+          opt1.textContent = g.label;
+          selectFilter.appendChild(opt1);
+
+          // Add vào Form
+          const opt2 = document.createElement("option");
+          opt2.value = g.key;
+          opt2.textContent = g.label;
+          selectForm.appendChild(opt2);
+        });
+      } catch (e) {
+        console.error("Lỗi nạp taxonomy:", e);
+      }
+    }
+
+    // 4. Lấy trạng thái hệ thống & Git
+    async function fetchSystemStatus() {
+      try {
+        const res = await fetch("/api/status");
+        const data = await res.json();
+        const gitPill = document.getElementById("gitStatusPill");
+        const gitText = document.getElementById("gitStatusText");
+
+        if (data.git && data.git.has_remote) {
+          gitText.textContent = `GitHub: ${data.git.branch}`;
+        } else {
+          gitText.textContent = "Local Only";
+          gitPill.classList.remove("text-emerald-400", "bg-emerald-950/60", "border-emerald-800/60");
+          gitPill.classList.add("text-slate-400", "bg-slate-900", "border-slate-800");
+        }
+      } catch (e) {
+        console.error("Lỗi nạp status:", e);
+      }
+    }
+
+    // 5. Nạp danh sách ca kinh nghiệm
+    async function loadCasesList(group = "") {
+      const container = document.getElementById("casesListContainer");
+      try {
+        const url = group ? `/api/cases?group=${encodeURIComponent(group)}` : "/api/cases";
+        const res = await fetch(url);
+        const data = await res.json();
+        currentCases = data.cases || [];
+
+        document.getElementById("caseCountBadge").textContent = `Tổng số: ${currentCases.length} ca`;
+
+        if (currentCases.length === 0) {
+          container.innerHTML = `<div class="p-6 text-center text-xs text-slate-500">Chưa có ca kinh nghiệm nào trong nhóm này.</div>`;
+          return;
+        }
+
+        container.innerHTML = currentCases.map(c => `
+          <div onclick="selectCase('${c.id}')" id="case-item-${c.id}" class="case-card p-3 rounded-lg border border-[#232d3f] bg-[#18202d] hover:bg-[#1e293b] hover:border-sky-500/50 cursor-pointer transition-all ${selectedCaseId === c.id ? 'border-sky-500 bg-[#1e293b] shadow-md' : ''}">
+            <div class="flex items-center justify-between mb-1">
+              <span class="px-1.5 py-0.5 text-[10px] font-mono font-bold bg-sky-950 text-sky-400 border border-sky-800 rounded">${c.id}</span>
+              <span class="text-[10px] text-emerald-400 font-medium flex items-center space-x-1">
+                <i data-lucide="check-circle" class="w-3 h-3"></i>
+                <span>verified</span>
+              </span>
+            </div>
+            <h4 class="text-xs font-semibold text-white line-clamp-2 mb-1">${escapeHtml(c.title)}</h4>
+            <div class="flex items-center space-x-1 text-[10px] text-slate-400">
+              <span class="text-sky-400">${c.civil_groups[0] || 'Civil 3D'}</span>
+              <span>•</span>
+              <span>Rev ${c.revision}</span>
+            </div>
+          </div>
+        `).join("");
+
+        lucide.createIcons();
+
+        // Tự động mở ca đầu tiên nếu chưa chọn
+        if (!selectedCaseId && currentCases.length > 0) {
+          selectCase(currentCases[0].id);
+        }
+      } catch (err) {
+        container.innerHTML = `<div class="p-4 text-xs text-rose-400">Lỗi nạp danh sách: ${err.message}</div>`;
+      }
+    }
+
+    // 6. Chọn và hiển thị chi tiết một ca
+    async function selectCase(caseId) {
+      selectedCaseId = caseId;
+      
+      // Update UI active state trên list
+      document.querySelectorAll(".case-card").forEach(el => {
+        el.classList.remove("border-sky-500", "bg-[#1e293b]");
+      });
+      const activeEl = document.getElementById(`case-item-${caseId}`);
+      if (activeEl) {
+        activeEl.classList.add("border-sky-500", "bg-[#1e293b]");
+      }
+
+      const detailView = document.getElementById("caseDetailView");
+      detailView.innerHTML = `
+        <div class="flex items-center justify-center h-48 space-x-2 text-slate-400">
+          <i data-lucide="loader-2" class="w-5 h-5 animate-spin text-sky-400"></i>
+          <span class="text-xs">Đang nạp chi tiết ${caseId}...</span>
+        </div>
+      `;
+      lucide.createIcons();
+
+      try {
+        const res = await fetch(`/api/cases/${caseId}`);
+        const data = await res.json();
+        const meta = data.metadata;
+        const c = data.content;
+
+        // Render Markdown cho phần Steps
+        const stepsHtml = DOMPurify.sanitize(marked.parse(c.steps || ""));
+
+        detailView.innerHTML = `
+          <!-- Header Ca -->
+          <div class="border-b border-[#232d3f] pb-5 mb-6">
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center space-x-2.5">
+                <span class="px-2.5 py-1 text-xs font-mono font-bold bg-sky-950 text-sky-400 border border-sky-800 rounded-md">${meta.id}</span>
+                <span class="px-2 py-0.5 text-xs font-semibold bg-emerald-950 text-emerald-400 border border-emerald-800 rounded-md flex items-center space-x-1">
+                  <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
+                  <span>${meta.verification}</span>
+                </span>
+                <span class="text-xs text-slate-400 font-mono">Revision ${meta.revision}</span>
+              </div>
+              
+              <!-- Action Edit Button -->
+              <button onclick="openEditModal('${meta.id}')" class="flex items-center space-x-1.5 px-3 py-1.5 text-xs font-medium text-slate-200 bg-[#18202d] hover:bg-[#232d3f] border border-[#232d3f] rounded-lg transition-colors">
+                <i data-lucide="edit-3" class="w-3.5 h-3.5 text-sky-400"></i>
+                <span>Chỉnh sửa ca này</span>
+              </button>
+            </div>
+
+            <h1 class="text-xl font-bold text-white tracking-tight leading-snug mb-2">${escapeHtml(c.title)}</h1>
+            <p class="text-xs text-slate-400 leading-relaxed">${escapeHtml(c.summary)}</p>
+
+            <div class="flex flex-wrap gap-1.5 mt-3">
+              ${(meta.civil_groups || []).map(g => `<span class="px-2 py-0.5 text-[11px] font-medium bg-[#18202d] text-sky-300 border border-[#2d3a4f] rounded">${g}</span>`).join('')}
+              <span class="px-2 py-0.5 text-[11px] font-medium bg-[#18202d] text-slate-400 border border-[#232d3f] rounded">${meta.civil_version || 'Civil 3D'}</span>
+            </div>
+          </div>
+
+          <!-- Section Vấn đề & Nguyên nhân -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div class="p-4 rounded-xl border border-amber-900/40 bg-amber-950/15">
+              <div class="flex items-center space-x-2 text-amber-400 font-semibold text-xs mb-2">
+                <i data-lucide="alert-triangle" class="w-4 h-4"></i>
+                <span>VẤN ĐỀ / HIỆN TƯỢNG</span>
+              </div>
+              <p class="text-xs text-slate-200 leading-relaxed font-mono whitespace-pre-wrap">${escapeHtml(c.problem)}</p>
+            </div>
+
+            <div class="p-4 rounded-xl border border-sky-900/40 bg-sky-950/15">
+              <div class="flex items-center space-x-2 text-sky-400 font-semibold text-xs mb-2">
+                <i data-lucide="lightbulb" class="w-4 h-4"></i>
+                <span>NGUYÊN NHÂN KỸ THUẬT</span>
+              </div>
+              <p class="text-xs text-slate-200 leading-relaxed font-mono whitespace-pre-wrap">${escapeHtml(c.cause || 'Đặc tính thiết kế mặc định của Civil 3D.')}</p>
+            </div>
+          </div>
+
+          <!-- Section Quy trình xử lý -->
+          <div class="mb-6">
+            <div class="flex items-center space-x-2 text-emerald-400 font-bold text-sm mb-3">
+              <i data-lucide="check-square" class="w-4 h-4"></i>
+              <span>QUY TRÌNH XỬ LÝ CHUẨN</span>
+            </div>
+            <div class="prose prose-invert max-w-none text-xs text-slate-200 leading-relaxed bg-[#131822] border border-[#232d3f] rounded-xl p-5 markdown-content">
+              ${stepsHtml}
+            </div>
+          </div>
+
+          <!-- Section Cảnh báo (Nếu có) -->
+          ${(c.warnings && c.warnings.length > 0) ? `
+            <div class="p-4 rounded-xl border border-rose-900/50 bg-rose-950/20 mb-6">
+              <div class="flex items-center space-x-2 text-rose-400 font-semibold text-xs mb-2">
+                <i data-lucide="alert-octagon" class="w-4 h-4"></i>
+                <span>CẢNH BÁO KỸ THUẬT & LƯU Ý QUAN TRỌNG</span>
+              </div>
+              <ul class="list-disc list-inside text-xs text-slate-200 space-y-1">
+                ${c.warnings.map(w => `<li>${escapeHtml(w)}</li>`).join('')}
+              </ul>
+            </div>
+          ` : ''}
+        `;
+
+        lucide.createIcons();
+        attachCopyButtons();
+      } catch (err) {
+        detailView.innerHTML = `<div class="p-4 text-xs text-rose-400">Lỗi nạp ca ${caseId}: ${err.message}</div>`;
+      }
+    }
+
+    // 7. Gắn nút Copy 1-Click cho các thẻ <code>
+    function attachCopyButtons() {
+      document.querySelectorAll(".markdown-content code").forEach(el => {
+        if (el.parentElement.tagName === "PRE") return; // Bỏ qua block pre
+        el.title = "Bấm để sao chép lệnh CAD này";
+        el.classList.add("cursor-pointer", "hover:text-sky-300", "underline", "decoration-sky-500/40");
+        el.onclick = (e) => {
+          e.stopPropagation();
+          const text = el.innerText.trim();
+          navigator.clipboard.writeText(text);
+          showToast(`📋 Đã copy lệnh: ${text}`, "success");
+        };
+      });
+    }
+
+    // 8. Đổi bộ lọc chuyên mục
+    function onGroupFilterChange() {
+      const selected = document.getElementById("groupFilter").value;
+      loadCasesList(selected);
+    }
+
+    // 9. Lọc nhanh bên thanh Sidebar
+    let searchDebounceTimer = null;
+    function debounceSidebarSearch() {
+      clearTimeout(searchDebounceTimer);
+      searchDebounceTimer = setTimeout(() => {
+        const q = document.getElementById("sidebarSearchInput").value.trim().toLowerCase();
+        document.querySelectorAll(".case-card").forEach(card => {
+          const text = card.innerText.toLowerCase();
+          card.style.display = text.includes(q) ? "block" : "none";
+        });
+      }, 150);
+    }
+
+    // 10. Tìm kiếm Modal Quick Switcher (Ctrl+K)
+    function openSearchModal() {
+      const modal = document.getElementById("searchModal");
+      modal.classList.remove("hidden");
+      const input = document.getElementById("modalSearchInput");
+      input.value = "";
+      input.focus();
+      debounceModalSearch();
+    }
+
+    function closeSearchModal() {
+      document.getElementById("searchModal").classList.add("hidden");
+    }
+
+    let modalDebounceTimer = null;
+    function debounceModalSearch() {
+      clearTimeout(modalDebounceTimer);
+      modalDebounceTimer = setTimeout(async () => {
+        const q = document.getElementById("modalSearchInput").value.trim();
+        const container = document.getElementById("modalSearchResults");
+        if (!q) {
+          container.innerHTML = `<div class="p-4 text-center text-xs text-slate-400">Gõ từ khóa để tìm kiếm...</div>`;
+          return;
+        }
+
+        try {
+          const res = await fetch(`/api/cases?q=${encodeURIComponent(q)}&limit=10`);
+          const data = await res.json();
+          const list = data.cases || [];
+
+          if (list.length === 0) {
+            container.innerHTML = `<div class="p-4 text-center text-xs text-slate-500">Không tìm thấy ca nào phù hợp với từ khóa "${escapeHtml(q)}".</div>`;
+            return;
+          }
+
+          container.innerHTML = list.map(item => `
+            <div onclick="selectCaseFromModal('${item.id}')" class="p-3 hover:bg-[#18202d] cursor-pointer rounded-lg transition-colors flex items-center justify-between">
+              <div>
+                <div class="flex items-center space-x-2 mb-1">
+                  <span class="px-1.5 py-0.5 text-[10px] font-mono font-bold bg-sky-950 text-sky-400 border border-sky-800 rounded">${item.id}</span>
+                  <span class="text-xs font-semibold text-white">${escapeHtml(item.title)}</span>
+                </div>
+                <div class="text-[11px] text-slate-400 line-clamp-1">${escapeHtml(item.summary || '')}</div>
+              </div>
+              <span class="text-[10px] text-sky-400 font-mono">Điểm: ${item.score}</span>
+            </div>
+          `).join("");
+        } catch (e) {
+          container.innerHTML = `<div class="p-3 text-xs text-rose-400">Lỗi tìm kiếm: ${e.message}</div>`;
+        }
+      }, 200);
+    }
+
+    function selectCaseFromModal(caseId) {
+      closeSearchModal();
+      selectCase(caseId);
+    }
+
+    // 11. Modal Tạo / Sửa Ca
+    function openCreateModal() {
+      editingCaseId = null;
+      document.getElementById("editorModalTitle").textContent = "Ghi nhận Ca Kinh nghiệm Civil 3D Mới";
+      document.getElementById("formTitle").value = "";
+      document.getElementById("formSummary").value = "";
+      document.getElementById("formProblem").value = "";
+      document.getElementById("formCause").value = "";
+      document.getElementById("formSteps").value = "";
+      document.getElementById("formWarnings").value = "";
+      document.getElementById("editorModal").classList.remove("hidden");
+    }
+
+    async function openEditModal(caseId) {
+      editingCaseId = caseId;
+      document.getElementById("editorModalTitle").textContent = `Chỉnh sửa Ca ${caseId}`;
+      try {
+        const res = await fetch(`/api/cases/${caseId}`);
+        const data = await res.json();
+        const c = data.content;
+        const meta = data.metadata;
+
+        editingExpectedRev = meta.revision;
+
+        document.getElementById("formTitle").value = c.title || "";
+        document.getElementById("formSummary").value = c.summary || "";
+        document.getElementById("formProblem").value = c.problem || "";
+        document.getElementById("formCause").value = c.cause || "";
+        document.getElementById("formSteps").value = c.steps || "";
+        document.getElementById("formWarnings").value = (c.warnings || []).join(", ");
+        if (c.civil_groups && c.civil_groups.length > 0) {
+          document.getElementById("formCivilGroup").value = c.civil_groups[0];
+        }
+
+        document.getElementById("editorModal").classList.remove("hidden");
+      } catch (e) {
+        showToast("Lỗi mở ca để sửa: " + e.message, "error");
+      }
+    }
+
+    function closeEditorModal() {
+      document.getElementById("editorModal").classList.add("hidden");
+    }
+
+    // 12. Submit Form Lưu Ca
+    async function submitCaseForm() {
+      const title = document.getElementById("formTitle").value.trim();
+      const summary = document.getElementById("formSummary").value.trim();
+      const problem = document.getElementById("formProblem").value.trim();
+      const cause = document.getElementById("formCause").value.trim();
+      const steps = document.getElementById("formSteps").value.trim();
+      const warningsText = document.getElementById("formWarnings").value.trim();
+      const group = document.getElementById("formCivilGroup").value;
+      const civilVersion = document.getElementById("formCivilVersion").value.trim();
+
+      if (!title || !summary || !problem) {
+        showToast("Vui lòng điền đủ Tiêu đề, Tóm tắt và Vấn đề!", "warning");
+        return;
+      }
+
+      const warnings = warningsText ? [warningsText] : [];
+      const civil_groups = group ? [group] : [];
+
+      const btnSave = document.getElementById("btnSaveCase");
+      btnSave.disabled = true;
+      btnSave.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i><span>Đang lưu & đẩy GitHub...</span>`;
+      lucide.createIcons();
+
+      try {
+        if (!editingCaseId) {
+          // Tạo mới
+          const payload = {
+            title, summary, problem, cause, steps, warnings, civil_groups, civil_version,
+            verification: "verified_live"
+          };
+          const res = await fetch("/api/cases", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.detail || "Lỗi tạo ca mới");
+
+          showToast(`✅ Đã lưu ${data.case_id} & đồng bộ GitHub thành công!`, "success");
+          closeEditorModal();
+          await loadCasesList();
+          selectCase(data.case_id);
+        } else {
+          // Cập nhật
+          const payload = {
+            expected_revision: editingExpectedRev,
+            revision_reason: "Chỉnh sửa qua Web Notebook",
+            title, summary, problem, cause, steps, warnings, civil_groups, civil_version,
+            verification: "verified_live"
+          };
+          const res = await fetch(`/api/cases/${editingCaseId}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.detail || "Lỗi cập nhật ca");
+
+          showToast(`✅ Đã cập nhật ${editingCaseId} lên Rev ${data.revision}!`, "success");
+          closeEditorModal();
+          await loadCasesList();
+          selectCase(editingCaseId);
+        }
+      } catch (err) {
+        showToast(err.message, "error");
+      } finally {
+        btnSave.disabled = false;
+        btnSave.innerHTML = `<i data-lucide="save" class="w-4 h-4"></i><span>Lưu & Đẩy lên GitHub</span>`;
+        lucide.createIcons();
+      }
+    }
+
+    // 13. Kích hoạt Đồng bộ GitHub (Pull & Rebuild)
+    async function triggerSync() {
+      const btnSync = document.getElementById("btnSync");
+      const iconSync = document.getElementById("iconSync");
+      btnSync.disabled = true;
+      iconSync.classList.add("animate-spin");
+
+      showToast("Đang đồng bộ với GitHub...", "info");
+
+      try {
+        const res = await fetch("/api/sync", { method: "POST" });
+        const data = await res.json();
+        
+        if (data.status === "success") {
+          showToast(`🔄 ${data.message} (${data.rebuilt_cases || 0} ca được cập nhật)`, "success");
+          await loadCasesList();
+          if (selectedCaseId) selectCase(selectedCaseId);
+        } else {
+          showToast(`Lỗi đồng bộ: ${data.message || data.error}`, "warning");
+        }
+      } catch (e) {
+        showToast("Lỗi kết nối đồng bộ: " + e.message, "error");
+      } finally {
+        btnSync.disabled = false;
+        iconSync.classList.remove("animate-spin");
+      }
+    }
+
+    // 14. Toast Notification System
+    function showToast(message, type = "info") {
+      const container = document.getElementById("toastContainer");
+      const toast = document.createElement("div");
+      toast.className = `px-4 py-2.5 rounded-lg text-xs font-medium text-white shadow-xl flex items-center space-x-2 border transition-all duration-300 pointer-events-auto ${
+        type === 'success' ? 'bg-emerald-950/90 border-emerald-700 text-emerald-200' :
+        type === 'error' ? 'bg-rose-950/90 border-rose-700 text-rose-200' :
+        type === 'warning' ? 'bg-amber-950/90 border-amber-700 text-amber-200' :
+        'bg-[#1e293b]/95 border-sky-600 text-sky-200'
+      }`;
+      toast.innerHTML = `<span>${escapeHtml(message)}</span>`;
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 300);
+      }, 4000);
+    }
+
+    function escapeHtml(str) {
+      if (!str) return "";
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+  </script>
+</body>
+</html>
