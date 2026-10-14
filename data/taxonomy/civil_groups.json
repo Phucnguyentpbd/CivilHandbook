@@ -1,0 +1,110 @@
+[
+  {
+    "id": "drawing_units_crs",
+    "name": "Drawing/Units/CRS",
+    "aliases": ["Bản vẽ", "Đơn vị", "Hệ tọa độ", "CRS", "Units", "Drawing Setup", "Coordinate System"],
+    "description": "Cài đặt bản vẽ, đơn vị đo, hệ tọa độ VN2000, WGS84, kinh tuyến trục, múi chiếu"
+  },
+  {
+    "id": "points_survey",
+    "name": "Points/Survey",
+    "aliases": ["Điểm đo đạc", "Điểm khảo sát", "Survey Points", "COGO Points", "Point Cloud"],
+    "description": "Điểm đo đạc địa hình, nhập xuất điểm, Point Group, Point Style"
+  },
+  {
+    "id": "surface",
+    "name": "Surface",
+    "aliases": ["Bề mặt", "Địa hình", "TIN Surface", "Grid Surface", "DEM", "DTM"],
+    "description": "Tạo và chỉnh sửa bề mặt TIN/Grid, contour, breakline, boundary"
+  },
+  {
+    "id": "alignment",
+    "name": "Alignment",
+    "aliases": ["Tuyến", "Tim đường", "Alignment", "Bình đồ tuyến", "Horizontal Alignment"],
+    "description": "Thiết kế tuyến đường, đường cong bằng, siêu cao, mở rộng"
+  },
+  {
+    "id": "profile_profile_view",
+    "name": "Profile/Profile View",
+    "aliases": ["Trắc dọc", "Profile", "Profile View", "Vertical Alignment", "Trắc dọc thiết kế"],
+    "description": "Trắc dọc tự nhiên và thiết kế, đường cong đứng, Profile View"
+  },
+  {
+    "id": "sample_line_section_view",
+    "name": "Sample Line/Section/Section View",
+    "aliases": ["Trắc ngang", "Section", "Section View", "Sample Line", "Mặt cắt ngang"],
+    "description": "Tạo Sample Line, trắc ngang tự nhiên và thiết kế, Section View"
+  },
+  {
+    "id": "assembly_subassembly_sac",
+    "name": "Assembly/Subassembly/SAC",
+    "aliases": ["Mặt cắt điển hình", "Assembly", "Subassembly", "SAC", "PKT", "Subassembly Composer"],
+    "description": "Tạo Assembly, Subassembly chuẩn và tùy biến, Subassembly Composer"
+  },
+  {
+    "id": "corridor",
+    "name": "Corridor",
+    "aliases": ["Hành lang", "Corridor", "Corridor Model", "Hành lang đường"],
+    "description": "Tạo và chỉnh sửa Corridor Model, Region, Target, Frequency"
+  },
+  {
+    "id": "feature_line_grading",
+    "name": "Feature Line/Grading",
+    "aliases": ["Feature Line", "Grading", "San nền", "Đường đặc trưng", "Grading Object"],
+    "description": "Feature Line, Grading Object, san nền, taluy đào đắp"
+  },
+  {
+    "id": "parcels",
+    "name": "Parcels",
+    "aliases": ["Thửa đất", "Parcels", "Parcel", "Giải phóng mặt bằng", "GPMB"],
+    "description": "Thửa đất, phân lô, giải phóng mặt bằng, ranh giới"
+  },
+  {
+    "id": "pipe_pressure_network",
+    "name": "Pipe/Pressure Network",
+    "aliases": ["Cống thoát nước", "Pipe Network", "Pressure Network", "Mạng ống", "Thoát nước"],
+    "description": "Mạng ống trọng lực và áp lực, cống, hố ga, manhol"
+  },
+  {
+    "id": "quantity_earthwork",
+    "name": "Quantity/Earthwork",
+    "aliases": ["Khối lượng", "Earthwork", "Đào đắp", "Quantity", "Mass Haul", "Bóc tách khối lượng"],
+    "description": "Tính toán khối lượng đào đắp, Mass Haul, bảng khối lượng"
+  },
+  {
+    "id": "styles_labels",
+    "name": "Styles/Labels",
+    "aliases": ["Style", "Label", "Kiểu", "Nhãn", "Annotation", "Label Style", "Object Style"],
+    "description": "Quản lý Style và Label trong Civil 3D"
+  },
+  {
+    "id": "data_shortcuts_references",
+    "name": "Data Shortcuts/References",
+    "aliases": ["Data Shortcut", "Reference", "Tham chiếu dữ liệu", "Vault", "BIM 360"],
+    "description": "Data Shortcut, Reference dữ liệu giữa các bản vẽ"
+  },
+  {
+    "id": "layout_viewport_plot",
+    "name": "Layout/Viewport/Plot",
+    "aliases": ["Layout", "Viewport", "In bản vẽ", "Plot", "Xuất PDF", "Sheet"],
+    "description": "Layout, Viewport, in bản vẽ, xuất PDF, Sheet Set"
+  },
+  {
+    "id": "map_gis",
+    "name": "Map/GIS",
+    "aliases": ["Map", "GIS", "AutoCAD Map", "QGIS", "Bản đồ", "FDO", "WMS", "WFS"],
+    "description": "AutoCAD Map 3D, QGIS, kết nối FDO, WMS, WFS, GeoJSON"
+  },
+  {
+    "id": "automation_api",
+    "name": "Automation/API",
+    "aliases": ["API", "Tự động hóa", ".NET API", "COM", "LISP", "AutoLISP", "C#", "Roslyn", "Python", "Script"],
+    "description": "Tự động hóa Civil 3D qua .NET API, LISP, C# Roslyn, Python, COM"
+  },
+  {
+    "id": "plugin_mcp",
+    "name": "Plugin/MCP",
+    "aliases": ["Plugin", "MCP", "Bundle", "ARX", "DLL", "Addon", "Extension", "MCP server", "PackageContents"],
+    "description": "Plugin AutoCAD/Civil 3D, MCP server, bundle, ARX, addon"
+  }
+]

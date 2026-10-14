@@ -1,0 +1,36 @@
+# SQLite & Temporary Index (chỉ mục dẫn xuất cục bộ, tự động rebuild)
+data/index/
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+
+# Backup queue cục bộ
+data/backup-queue/*
+!data/backup-queue/.gitkeep
+
+# Evidence cục bộ (ảnh/file nặng không đẩy lên git)
+data/evidence/*
+!data/evidence/.gitkeep
+
+# Python cache & environment
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.venv/
+venv/
+ENV/
+
+# IDE & OS files
+.vscode/
+.idea/
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store
+
+# Secrets & Environment
+.env
+*.pem
+*.key
+*.token

@@ -1,0 +1,22 @@
+{
+  "id": "CIV-0004",
+  "revision": 3,
+  "idempotency_key": "test-server-revise-ab90186d-1a6f-438c-979d-b78a9bb9f5d1",
+  "title": "Kiểm thử trắc ngang server MCP",
+  "lifecycle": "deleted",
+  "verification": "verified_offline",
+  "semantic_status": "semantic_pending",
+  "civil_groups": [
+    "Sample Line/Section/Section View"
+  ],
+  "plugins": [],
+  "created_at": "2026-10-13T11:40:11.138459Z",
+  "updated_at": "2026-10-13T11:40:13.059083Z",
+  "last_verified_at": null,
+  "related_to": [],
+  "conflicts_with": [],
+  "supersedes": null,
+  "sensitivity": "default",
+  "project": null,
+  "civil_version": null
+}

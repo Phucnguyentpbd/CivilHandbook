@@ -1,0 +1,39 @@
+[
+  {
+    "name": "Civil Handbook MCP",
+    "version": "1.0.0",
+    "bundle": "CivilHandbook.bundle",
+    "dll": null,
+    "commands": ["civil_handbook_search_cases", "civil_handbook_get_case", "civil_handbook_save_case",
+                 "civil_handbook_revise_case", "civil_handbook_undo_change", "civil_handbook_health"],
+    "description": "MCP server sổ tay kinh nghiệm Civil dùng chung cho Codex, Orca, Antigravity",
+    "identity": "verified_live"
+  },
+  {
+    "name": "Civil 3D MCP",
+    "version": "1.0.0",
+    "bundle": "Civil3DMCP.bundle",
+    "dll": null,
+    "commands": ["civil3d_status", "civil3d_context", "civil3d_query", "civil3d_execute"],
+    "description": "MCP server Civil 3D 2027 C# Roslyn In-Process",
+    "identity": "verified_live"
+  },
+  {
+    "name": "AutoCAD MCP",
+    "version": "1.0.0",
+    "bundle": "AutoCAD.bundle",
+    "dll": null,
+    "commands": ["drawing", "entity", "layer", "block", "annotation", "pid", "view", "execute", "presentation", "system"],
+    "description": "MCP server AutoCAD",
+    "identity": "verified_live"
+  },
+  {
+    "name": "Subassembly Composer",
+    "version": "2027",
+    "bundle": "SubassemblyComposer.bundle",
+    "dll": "SubassemblyComposer.dll",
+    "commands": [],
+    "description": "Autodesk Subassembly Composer — tạo subassembly tùy biến dạng XAML PKT",
+    "identity": "verified_offline"
+  }
+]
