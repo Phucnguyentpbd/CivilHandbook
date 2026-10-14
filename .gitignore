@@ -8,9 +8,10 @@ data/index/
 data/backup-queue/*
 !data/backup-queue/.gitkeep
 
-# Evidence cục bộ (ảnh/file nặng không đẩy lên git)
-data/evidence/*
-!data/evidence/.gitkeep
+# Evidence: Cho phép theo dõi & đồng bộ hình ảnh minh chứng kỹ thuật qua Git
+# data/evidence/ được push đầy đủ để các máy khác xem được ảnh
+!data/evidence/
+!data/evidence/*
 
 # Python cache & environment
 __pycache__/

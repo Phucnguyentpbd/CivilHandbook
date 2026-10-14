@@ -63,6 +63,24 @@
     .cad-glow {
       box-shadow: 0 0 15px rgba(56, 189, 248, 0.15);
     }
+
+    /* Markdown Images */
+    .markdown-content img {
+      border-radius: 8px;
+      border: 1px solid #2d3a4f;
+      background: #080c13;
+      padding: 4px;
+      margin: 1.25rem 0;
+      max-width: 100%;
+      height: auto;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+      transition: transform 0.2s ease, border-color 0.2s ease;
+      cursor: zoom-in;
+    }
+    .markdown-content img:hover {
+      border-color: #38bdf8;
+      box-shadow: 0 0 15px rgba(56, 189, 248, 0.25);
+    }
   </style>
 </head>
 <body class="bg-[#0c1017] text-slate-200 font-sans antialiased h-screen flex flex-col overflow-hidden select-none">
@@ -588,7 +606,7 @@
       }
     }
 
-    // 7. Gắn nút Copy 1-Click cho các thẻ <code>
+    // 7. Gắn nút Copy 1-Click cho các thẻ <code> & Click mở ảnh phóng to
     function attachCopyButtons() {
       document.querySelectorAll(".markdown-content code").forEach(el => {
         if (el.parentElement.tagName === "PRE") return; // Bỏ qua block pre
@@ -599,6 +617,13 @@
           const text = el.innerText.trim();
           navigator.clipboard.writeText(text);
           showToast(`📋 Đã copy lệnh: ${text}`, "success");
+        };
+      });
+
+      // Tự động gắn sự kiện click phóng to ảnh
+      document.querySelectorAll(".markdown-content img").forEach(img => {
+        img.onclick = () => {
+          openImageLightbox(img.src, img.alt);
         };
       });
     }
@@ -847,6 +872,41 @@
       if (!str) return "";
       return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
     }
+
+    // 15. Lightbox phóng to ảnh
+    function openImageLightbox(src, caption) {
+      const modal = document.getElementById("imageLightboxModal");
+      const img = document.getElementById("lightboxImg");
+      const cap = document.getElementById("lightboxCaption");
+      img.src = src;
+      cap.textContent = caption || "";
+      modal.classList.remove("hidden");
+      lucide.createIcons();
+    }
+
+    function closeImageLightbox() {
+      const modal = document.getElementById("imageLightboxModal");
+      modal.classList.add("hidden");
+    }
+
+    // Bắt phím ESC đóng lightbox
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        closeImageLightbox();
+      }
+    });
   </script>
+
+  <!-- ─── MODAL: LIGHTBOX PHÓNG TO ẢNH MINH CHỨNG ────────────────────────────── -->
+  <div id="imageLightboxModal" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden" onclick="closeImageLightbox()">
+    <div class="relative max-w-5xl max-h-[92vh] flex flex-col items-center" onclick="event.stopPropagation()">
+      <button onclick="closeImageLightbox()" class="absolute -top-10 right-0 text-slate-300 hover:text-white flex items-center space-x-1 text-xs bg-[#18202d] hover:bg-[#232d3f] px-3 py-1.5 rounded-lg border border-slate-700 transition-colors">
+        <i data-lucide="x" class="w-4 h-4"></i>
+        <span>Đóng (ESC)</span>
+      </button>
+      <img id="lightboxImg" src="" alt="" class="max-w-full max-h-[85vh] rounded-xl border border-[#2d3a4f] shadow-2xl object-contain bg-[#080c13] cad-glow">
+      <p id="lightboxCaption" class="text-xs text-sky-300 mt-2.5 font-medium text-center"></p>
+    </div>
+  </div>
 </body>
 </html>
