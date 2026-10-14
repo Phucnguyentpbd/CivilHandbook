@@ -1,7 +1,7 @@
 """
 run_web.py — Khởi chạy ứng dụng Web Sổ tay Civil (Civil Notebook).
-Hỗ trợ kiểm tra cổng thông minh: Nếu server đã chạy thì chỉ mở cửa sổ ứng dụng,
-không bao giờ bị xung đột cổng hay tạo cửa sổ đen CMD.
+Tương thích hoàn hảo với pythonw.exe (chạy ngầm không cửa sổ),
+tự động kiểm tra cổng và mở cửa sổ Desktop App Window.
 """
 
 import os
@@ -16,6 +16,15 @@ from pathlib import Path
 ROOT_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT_DIR / "src"))
 
+# Xử lý stdout/stderr khi chạy qua pythonw.exe (tránh crash ngầm)
+LOG_FILE = ROOT_DIR / "web_server.log"
+if sys.stdout is None:
+    try:
+        sys.stdout = open(LOG_FILE, "a", encoding="utf-8", buffering=1)
+        sys.stderr = sys.stdout
+    except Exception:
+        pass
+
 PORT = 8765
 HOST = "127.0.0.1"
 URL = f"http://{HOST}:{PORT}"
@@ -25,18 +34,17 @@ CHROME_PATH = Path(r"C:\Program Files\Google\Chrome\Application\chrome.exe")
 
 
 def is_server_running(host: str, port: int) -> bool:
-    """Kiểm tra server đã chạy trên cổng này chưa."""
+    """Kiểm tra server đã thực sự lắng nghe trên cổng này chưa."""
     try:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            s.settimeout(0.5)
+            s.settimeout(0.3)
             return s.connect_ex((host, port)) == 0
     except Exception:
         return False
 
 
-def open_app_window():
+def open_app_window_now():
     """Mở giao diện dưới dạng Desktop App Window (không thanh URL) cực đẹp."""
-    time.sleep(0.8)
     # 1. Thử mở qua Microsoft Edge dạng App Mode
     if EDGE_PATH.exists():
         try:
@@ -57,16 +65,35 @@ def open_app_window():
     webbrowser.open(URL)
 
 
+def wait_and_open_app():
+    """Vòng lặp đợi server bind port thành công rồi mới mở cửa sổ."""
+    for _ in range(40):  # Đợi tối đa 20 giây (40 x 0.5s)
+        if is_server_running(HOST, PORT):
+            time.sleep(0.3)
+            open_app_window_now()
+            return
+        time.sleep(0.5)
+
+    open_app_window_now()
+
+
 if __name__ == "__main__":
-    # Nếu server đã đang chạy ngầm rồi -> Chỉ mở cửa sổ App và thoát
+    # 1. Nếu server đã đang chạy ngầm sẵn -> Chỉ mở cửa sổ App và thoát
     if is_server_running(HOST, PORT):
-        open_app_window()
+        open_app_window_now()
         sys.exit(0)
 
-    # Nếu chưa chạy -> Khởi động server và mở cửa sổ App
-    threading.Thread(target=open_app_window, daemon=True).start()
+    # 2. Nếu chưa chạy -> Bật luồng đợi server sẵn sàng mới mở App
+    threading.Thread(target=wait_and_open_app, daemon=True).start()
 
+    # 3. Khởi động uvicorn server (không dùng log config mặc định để an toàn với pythonw)
     import uvicorn
     from handbook.web.app import app
 
-    uvicorn.run(app, host=HOST, port=PORT, log_level="warning")
+    uvicorn.run(
+        app,
+        host=HOST,
+        port=PORT,
+        log_level="warning",
+        access_log=False,
+    )
