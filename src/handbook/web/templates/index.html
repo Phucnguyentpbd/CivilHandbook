@@ -321,6 +321,19 @@
           closeEditorModal();
         }
       });
+
+      // Enter trong ô tìm kiếm Modal -> Mở ngay kết quả đầu tiên
+      const modalInput = document.getElementById("modalSearchInput");
+      if (modalInput) {
+        modalInput.addEventListener("keydown", (e) => {
+          if (e.key === "Enter") {
+            const firstItem = document.querySelector("#modalSearchResults [onclick]");
+            if (firstItem) {
+              firstItem.click();
+            }
+          }
+        });
+      }
     }
 
     // 2. Lắng nghe dán ảnh màn hình CAD (Ctrl + V)
@@ -410,11 +423,17 @@
       }
     }
 
-    // 5. Nạp danh sách ca kinh nghiệm
-    async function loadCasesList(group = "") {
+    // 5. Nạp danh sách ca kinh nghiệm (hỗ trợ lọc theo group và tìm kiếm FTS5)
+    async function loadCasesList(group = "", query = "") {
       const container = document.getElementById("casesListContainer");
       try {
-        const url = group ? `/api/cases?group=${encodeURIComponent(group)}` : "/api/cases";
+        let url = "/api/cases";
+        const params = new URLSearchParams();
+        if (group) params.append("group", group);
+        if (query) params.append("q", query);
+        const qs = params.toString();
+        if (qs) url += `?${qs}`;
+
         const res = await fetch(url);
         const data = await res.json();
         currentCases = data.cases || [];
@@ -422,7 +441,7 @@
         document.getElementById("caseCountBadge").textContent = `Tổng số: ${currentCases.length} ca`;
 
         if (currentCases.length === 0) {
-          container.innerHTML = `<div class="p-6 text-center text-xs text-slate-500">Chưa có ca kinh nghiệm nào trong nhóm này.</div>`;
+          container.innerHTML = `<div class="p-6 text-center text-xs text-slate-500">Không tìm thấy ca nào phù hợp${query ? ` với từ khóa "${escapeHtml(query)}"` : ''}.</div>`;
           return;
         }
 
@@ -437,7 +456,7 @@
             </div>
             <h4 class="text-xs font-semibold text-white line-clamp-2 mb-1">${escapeHtml(c.title)}</h4>
             <div class="flex items-center space-x-1 text-[10px] text-slate-400">
-              <span class="text-sky-400">${c.civil_groups[0] || 'Civil 3D'}</span>
+              <span class="text-sky-400">${(c.civil_groups && c.civil_groups[0]) || 'Civil 3D'}</span>
               <span>•</span>
               <span>Rev ${c.revision}</span>
             </div>
@@ -446,9 +465,12 @@
 
         lucide.createIcons();
 
-        // Tự động mở ca đầu tiên nếu chưa chọn
-        if (!selectedCaseId && currentCases.length > 0) {
-          selectCase(currentCases[0].id);
+        // Tự động mở ca đầu tiên nếu chưa chọn hoặc ca được chọn không còn trong list
+        if (currentCases.length > 0) {
+          const exists = currentCases.some(c => c.id === selectedCaseId);
+          if (!exists) {
+            selectCase(currentCases[0].id);
+          }
         }
       } catch (err) {
         container.innerHTML = `<div class="p-4 text-xs text-rose-400">Lỗi nạp danh sách: ${err.message}</div>`;
@@ -584,20 +606,19 @@
     // 8. Đổi bộ lọc chuyên mục
     function onGroupFilterChange() {
       const selected = document.getElementById("groupFilter").value;
-      loadCasesList(selected);
+      const q = document.getElementById("sidebarSearchInput").value.trim();
+      loadCasesList(selected, q);
     }
 
-    // 9. Lọc nhanh bên thanh Sidebar
+    // 9. Lọc nhanh bên thanh Sidebar (Tận dụng Smart FTS5 Search của Backend)
     let searchDebounceTimer = null;
     function debounceSidebarSearch() {
       clearTimeout(searchDebounceTimer);
       searchDebounceTimer = setTimeout(() => {
-        const q = document.getElementById("sidebarSearchInput").value.trim().toLowerCase();
-        document.querySelectorAll(".case-card").forEach(card => {
-          const text = card.innerText.toLowerCase();
-          card.style.display = text.includes(q) ? "block" : "none";
-        });
-      }, 150);
+        const q = document.getElementById("sidebarSearchInput").value.trim();
+        const selectedGroup = document.getElementById("groupFilter").value;
+        loadCasesList(selectedGroup, q);
+      }, 200);
     }
 
     // 10. Tìm kiếm Modal Quick Switcher (Ctrl+K)

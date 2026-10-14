@@ -1,0 +1,22 @@
+{
+  "id": "CIV-0002",
+  "revision": 1,
+  "idempotency_key": "import-docx-CIV-0002-ccc218",
+  "title": "Hướng dẫn đọc và hiệu chỉnh biểu đồ siêu cao trực tiếp (Superelevation View)",
+  "lifecycle": "active",
+  "verification": "verified_live",
+  "semantic_status": "semantic_pending",
+  "civil_groups": [
+    "Alignment"
+  ],
+  "plugins": [],
+  "created_at": "2026-10-14T10:20:36.634465Z",
+  "updated_at": "2026-10-14T10:20:36.634465Z",
+  "last_verified_at": null,
+  "related_to": [],
+  "conflicts_with": [],
+  "supersedes": null,
+  "sensitivity": "default",
+  "project": null,
+  "civil_version": "Civil 3D 2020-2027"
+}

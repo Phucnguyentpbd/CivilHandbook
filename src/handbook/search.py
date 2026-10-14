@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import json
 import math
+import re
 import sqlite3
 import struct
 import logging
@@ -160,62 +161,104 @@ def _fts_search(
     verification_filter: Optional[list[str]],
 ) -> list[str]:
     """
-    Tìm bằng FTS5 BM25. Trả list[case_id] theo thứ tự BM25.
+    Tìm bằng FTS5 BM25 thông minh đa tầng:
+    1. Cụm từ chính xác (Exact phrase)
+    2. Tất cả các từ đều khớp (AND Prefix Tokens trên cả bảng gốc và normalized)
+    3. Bất kỳ từ nào khớp (OR Tokens xếp hạng theo BM25)
+    4. Multi-word LIKE fallback
     """
-    query_norm = normalize_vn(query)
+    query_clean = query.strip()
+    if not query_clean:
+        return []
 
-    def _escape_fts(q: str) -> str:
-        q = q.replace('"', '""').strip()
-        return f'"{q}"' if q else ""
+    query_norm = normalize_vn(query_clean)
+
+    # Tách tokens an toàn loại bỏ ký tự cú pháp FTS5
+    tokens_raw = [w.strip() for w in re.split(r'[\s,.;:!?()\[\]{}"\'\-+/*\\]+', query_clean) if len(w.strip()) >= 1]
+    tokens_norm = [w.strip() for w in re.split(r'[\s,.;:!?()\[\]{}"\'\-+/*\\]+', query_norm) if len(w.strip()) >= 1]
 
     fts_candidates: list[str] = []
 
-    # Thử 1: tìm theo query gốc (toàn bảng)
+    # ─── TẦNG 1: Cụm từ chính xác (Exact phrase) ─────────────────────────────
+    phrase_raw = f'"{query_clean.replace("\"", "\"\"")}"'
     try:
-        escaped = _escape_fts(query)
-        if escaped:
-            rows = con.execute(
-                f"""
-                SELECT case_id FROM cases_fts
-                WHERE cases_fts MATCH ?
-                ORDER BY rank
-                LIMIT ?
-                """,
-                (escaped, limit * 5),
-            ).fetchall()
-            fts_candidates.extend(r[0] for r in rows)
-    except sqlite3.OperationalError as e:
-        logger.debug("FTS query gốc lỗi: %s", e)
+        rows = con.execute(
+            "SELECT case_id FROM cases_fts WHERE cases_fts MATCH ? ORDER BY rank LIMIT ?",
+            (phrase_raw, limit * 5),
+        ).fetchall()
+        fts_candidates.extend(r[0] for r in rows)
+    except Exception as e:
+        logger.debug("FTS phrase raw error: %s", e)
 
-    # Thử 2: tìm theo normalized (không dấu)
-    if not fts_candidates and query_norm != query.lower():
-        try:
-            escaped_norm = _escape_fts(query_norm)
-            if escaped_norm:
-                rows = con.execute(
-                    "SELECT case_id FROM cases_fts WHERE normalized MATCH ? ORDER BY rank LIMIT ?",
-                    (escaped_norm, limit * 5),
-                )
-                fts_candidates.extend(r[0] for r in rows.fetchall())
-        except sqlite3.OperationalError as e:
-            logger.debug("FTS normalized lỗi: %s", e)
+    phrase_norm = f'"{query_norm.replace("\"", "\"\"")}"'
+    try:
+        rows = con.execute(
+            "SELECT case_id FROM cases_fts WHERE normalized MATCH ? ORDER BY rank LIMIT ?",
+            (phrase_norm, limit * 5),
+        ).fetchall()
+        fts_candidates.extend(r[0] for r in rows)
+    except Exception as e:
+        logger.debug("FTS phrase norm error: %s", e)
 
-    # Nếu vẫn rỗng, thử LIKE fallback
-    if not fts_candidates:
+    # ─── TẦNG 2: Tất cả các từ đều phải có mặt (AND Prefix Match) ───────────
+    if len(tokens_raw) > 1:
+        and_raw = " AND ".join(f'"{t}"*' for t in tokens_raw)
         try:
             rows = con.execute(
-                """
-                SELECT case_id FROM cases_fts
-                WHERE normalized LIKE ?
-                LIMIT ?
-                """,
-                (f"%{query_norm}%", limit * 5),
+                "SELECT case_id FROM cases_fts WHERE cases_fts MATCH ? ORDER BY rank LIMIT ?",
+                (and_raw, limit * 5),
             ).fetchall()
             fts_candidates.extend(r[0] for r in rows)
-        except sqlite3.OperationalError:
-            pass
+        except Exception as e:
+            logger.debug("FTS AND raw error: %s", e)
 
-    # Deduplicate giữ thứ tự
+    if len(tokens_norm) > 1:
+        and_norm = " AND ".join(f'"{t}"*' for t in tokens_norm)
+        try:
+            rows = con.execute(
+                "SELECT case_id FROM cases_fts WHERE normalized MATCH ? ORDER BY rank LIMIT ?",
+                (and_norm, limit * 5),
+            ).fetchall()
+            fts_candidates.extend(r[0] for r in rows)
+        except Exception as e:
+            logger.debug("FTS AND norm error: %s", e)
+    elif len(tokens_norm) == 1:
+        single_norm = f'"{tokens_norm[0]}"*'
+        try:
+            rows = con.execute(
+                "SELECT case_id FROM cases_fts WHERE normalized MATCH ? ORDER BY rank LIMIT ?",
+                (single_norm, limit * 5),
+            ).fetchall()
+            fts_candidates.extend(r[0] for r in rows)
+        except Exception as e:
+            logger.debug("FTS single norm error: %s", e)
+
+    # ─── TẦNG 3: Bất kỳ từ nào khớp (OR Match xếp hạng BM25) ────────────────
+    if len(tokens_norm) > 1 and not fts_candidates:
+        or_norm = " OR ".join(f'"{t}"*' for t in tokens_norm)
+        try:
+            rows = con.execute(
+                "SELECT case_id FROM cases_fts WHERE normalized MATCH ? ORDER BY rank LIMIT ?",
+                (or_norm, limit * 5),
+            ).fetchall()
+            fts_candidates.extend(r[0] for r in rows)
+        except Exception as e:
+            logger.debug("FTS OR norm error: %s", e)
+
+    # ─── TẦNG 4: Multi-word LIKE fallback ─────────────────────────────────────
+    if not fts_candidates and tokens_norm:
+        clauses = " AND ".join("normalized LIKE ?" for _ in tokens_norm)
+        params = [f"%{t}%" for t in tokens_norm]
+        try:
+            rows = con.execute(
+                f"SELECT case_id FROM cases_fts WHERE {clauses} LIMIT ?",
+                params + [limit * 5],
+            ).fetchall()
+            fts_candidates.extend(r[0] for r in rows)
+        except Exception as e:
+            logger.debug("FTS LIKE fallback error: %s", e)
+
+    # Deduplicate giữ thứ tự rank
     seen: set[str] = set()
     unique_candidates: list[str] = []
     for cid in fts_candidates:
@@ -418,7 +461,7 @@ def search_cases(
         if not rrf_scores:
             return []
 
-        # 4. Lấy metadata
+        # 4. Lấy metadata và summary
         all_ids = list(rrf_scores.keys())
         placeholders = ",".join("?" * len(all_ids))
         rows = con.execute(
@@ -426,6 +469,12 @@ def search_cases(
             all_ids,
         ).fetchall()
         row_map = {r["id"]: r for r in rows}
+
+        fts_summary_rows = con.execute(
+            f"SELECT case_id, summary FROM cases_fts WHERE case_id IN ({placeholders})",
+            all_ids,
+        ).fetchall()
+        summary_map = {r["case_id"]: (r["summary"] or "") for r in fts_summary_rows}
 
         # 5. Build SearchResult với boost
         results: list[SearchResult] = []
@@ -464,7 +513,7 @@ def search_cases(
                 case_id=case_id,
                 revision=row["revision"] or 1,
                 title=meta.get("title", ""),
-                summary=meta.get("summary", ""),  # Note: summary is in RevisionContent, not CaseMetadata
+                summary=summary_map.get(case_id, "") or meta.get("summary", ""),
                 verification=meta.get("verification", "unverified"),
                 score=round(final_score, 6),
                 matched_by=matched_by,

@@ -1,0 +1,25 @@
+{
+  "id": "CIV-0010",
+  "revision": 1,
+  "idempotency_key": "import-docx-CIV-0010-3411d9",
+  "title": "Quy trình tách file Section View qua Data Shortcuts & cập nhật ngược Surface",
+  "lifecycle": "active",
+  "verification": "verified_live",
+  "semantic_status": "semantic_pending",
+  "civil_groups": [
+    "Data Shortcuts/References",
+    "Sample Line/Section/Section View",
+    "Corridor",
+    "Surface"
+  ],
+  "plugins": [],
+  "created_at": "2026-10-14T10:20:36.634465Z",
+  "updated_at": "2026-10-14T10:20:36.634465Z",
+  "last_verified_at": null,
+  "related_to": [],
+  "conflicts_with": [],
+  "supersedes": null,
+  "sensitivity": "default",
+  "project": null,
+  "civil_version": "Civil 3D 2020-2027"
+}
