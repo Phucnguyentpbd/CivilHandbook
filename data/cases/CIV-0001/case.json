@@ -1,22 +1,24 @@
 {
   "id": "CIV-0001",
-  "revision": 3,
-  "idempotency_key": "test-server-revise-1",
-  "title": "Kiểm thử trắc ngang server MCP",
-  "lifecycle": "deleted",
-  "verification": "verified_offline",
+  "revision": 1,
+  "idempotency_key": "save-c3d-lock-to-station-20261014-01",
+  "title": "Giữ nguyên vị trí tọa độ cọc Sample Line khi nắn chỉnh kéo dài tim tuyến (Lock to Station)",
+  "lifecycle": "active",
+  "verification": "verified_live",
   "semantic_status": "semantic_pending",
   "civil_groups": [
-    "Sample Line/Section/Section View"
+    "Alignment",
+    "Sample Line/Section/Section View",
+    "Corridor"
   ],
   "plugins": [],
-  "created_at": "2026-10-13T11:33:03.010005Z",
-  "updated_at": "2026-10-13T11:33:04.738471Z",
+  "created_at": "2026-10-14T02:41:46.882563Z",
+  "updated_at": "2026-10-14T02:41:46.882563Z",
   "last_verified_at": null,
   "related_to": [],
   "conflicts_with": [],
   "supersedes": null,
   "sensitivity": "default",
   "project": null,
-  "civil_version": null
+  "civil_version": "Mọi phiên bản Civil 3D (2020-2027)"
 }
