@@ -86,3 +86,38 @@ D:\AGENT_AI\CivilHandbook\
   python -c "from scripts.backup_sync import restore_check; import tempfile, pathlib; print(restore_check(pathlib.Path(tempfile.mkdtemp())))"
   ```
   Hàm `restore_check()` kiểm tra toàn vẹn mã SHA-256 của từng file và tái dựng chỉ mục SQLite trong thư mục tạm, đảm bảo không bao giờ ảnh hưởng tới kho chính.
+
+---
+
+## 6. Đồng bộ Đa máy qua GitHub (Multi-Machine Sync)
+
+Hệ thống hỗ trợ làm việc song song trên nhiều máy (PC, Laptop, Máy cơ quan) thông qua GitHub Private Repository.
+
+### 6.1. Thiết lập lần đầu trên máy chính:
+1. Tạo một Private Repo trên GitHub (ví dụ: `https://github.com/<user>/CivilHandbook.git`).
+2. Gắn remote và đẩy lên:
+   ```powershell
+   cd D:\AGENT_AI\CivilHandbook
+   git remote add origin https://github.com/<user>/CivilHandbook.git
+   git push -u origin main
+   ```
+
+### 6.2. Thiết lập trên máy thứ hai (Laptop):
+Chỉ cần 3 bước:
+1. Clone repo về máy:
+   ```powershell
+   git clone https://github.com/<user>/CivilHandbook.git D:\AGENT_AI\CivilHandbook
+   ```
+2. Cài đặt thư viện & tự động dựng lại chỉ mục SQLite:
+   ```powershell
+   cd D:\AGENT_AI\CivilHandbook
+   pip install -r requirements.txt
+   python -c "from handbook.storage import rebuild_index_from_sources; print('Đã nạp:', rebuild_index_from_sources(), 'mục')"
+   ```
+3. Cấu hình MCP & Skill tương tự máy chính.
+
+### 6.3. Cơ chế tự động khi sử dụng:
+- **Tự động kéo (Auto Pull)**: Mỗi khi bạn nói *"bảo lưu"*, Agent sẽ tự động chạy ngầm `git pull` để lấy dữ liệu mới nhất từ máy kia về trước khi cấp phát mã `CIV-xxxx`.
+- **Tự động đẩy (Auto Push)**: Sau khi lưu ca mới thành công, Agent tự động `git commit` và `git push` lên GitHub.
+- **Đồng bộ thủ công tức thì**: Bạn có thể nói với Agent bất cứ lúc nào: *"đồng bộ sổ tay"* hoặc *"cập nhật sổ tay từ github"*, Agent sẽ gọi công cụ `civil_handbook_sync` để cập nhật.
+
