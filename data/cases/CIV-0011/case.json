@@ -1,0 +1,25 @@
+{
+  "id": "CIV-0011",
+  "revision": 1,
+  "idempotency_key": "manual-sac-layout-code-import-CIV-0011",
+  "title": "Ép hiển thị taluy đào hoặc đắp trong chế độ Layout Mode (SA.IsLayout) để Import Codes vào Corridor trong Civil 3D",
+  "lifecycle": "active",
+  "verification": "verified_live",
+  "semantic_status": "local_only",
+  "civil_groups": [
+    "Assembly/Subassembly/SAC",
+    "Corridor"
+  ],
+  "plugins": [],
+  "created_at": "2026-10-17T03:12:31.814967Z",
+  "updated_at": "2026-10-17T03:12:31.814967Z",
+  "last_verified_at": "2026-10-17T03:12:31.814967Z",
+  "related_to": [
+    "CIV-0009"
+  ],
+  "conflicts_with": [],
+  "supersedes": null,
+  "sensitivity": "default",
+  "project": null,
+  "civil_version": "Civil 3D 2020-2027"
+}
