@@ -1,0 +1,31 @@
+{
+  "id": "CIV-0012",
+  "revision": 1,
+  "idempotency_key": "manual-corridor-frequency-sampleline-CIV-0012",
+  "title": "Khử nhiễu đỉnh tam giác và trùng đường Section của bề mặt Corridor (Top/Datum/Vét bùn) bằng cách thêm Frequency tại cọc phát sinh",
+  "lifecycle": "active",
+  "verification": "verified_live",
+  "semantic_status": "local_only",
+  "civil_groups": [
+    "Corridor",
+    "Sample Line/Section/Section View",
+    "Surface"
+  ],
+  "plugins": [
+    "Visual Infra",
+    "AutoCAD Civil 3D"
+  ],
+  "created_at": "2026-10-18T08:09:20.932138Z",
+  "updated_at": "2026-10-18T08:09:20.932138Z",
+  "last_verified_at": "2026-10-18T08:09:20.932138Z",
+  "related_to": [
+    "CIV-0001",
+    "CIV-0009",
+    "CIV-0010"
+  ],
+  "conflicts_with": [],
+  "supersedes": null,
+  "sensitivity": "default",
+  "project": null,
+  "civil_version": "Civil 3D 2020-2027"
+}
