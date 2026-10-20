@@ -1,0 +1,22 @@
+{
+  "id": "CIV-0013",
+  "revision": 1,
+  "idempotency_key": "c3d-compute-materials-missing-surface-dropdown-20261020",
+  "title": "Khắc phục lỗi dropdown Select surface trong Compute Materials không hiển thị đủ các bề mặt Surface",
+  "lifecycle": "active",
+  "verification": "verified_live",
+  "semantic_status": "semantic_pending",
+  "civil_groups": [
+    "Surface"
+  ],
+  "plugins": [],
+  "created_at": "2026-10-20T08:00:42.868495Z",
+  "updated_at": "2026-10-20T08:00:42.868495Z",
+  "last_verified_at": null,
+  "related_to": [],
+  "conflicts_with": [],
+  "supersedes": null,
+  "sensitivity": "default",
+  "project": null,
+  "civil_version": "2027"
+}
