@@ -1,0 +1,26 @@
+{
+  "id": "CIV-0014",
+  "revision": 1,
+  "idempotency_key": "civ-case-corridor-frequency-overuse-tin-mismatch-20261020",
+  "title": "Không lạm dụng tăng dày Corridor Frequency để tránh lỗi lệch đường Section bề mặt và sai số khối lượng",
+  "lifecycle": "active",
+  "verification": "verified_live",
+  "semantic_status": "semantic_pending",
+  "civil_groups": [
+    "Corridor",
+    "Surface",
+    "Sample Line/Section/Section View"
+  ],
+  "plugins": [],
+  "created_at": "2026-10-20T10:46:33.323635Z",
+  "updated_at": "2026-10-20T10:46:33.323635Z",
+  "last_verified_at": null,
+  "related_to": [
+    "CIV-0012"
+  ],
+  "conflicts_with": [],
+  "supersedes": null,
+  "sensitivity": "default",
+  "project": null,
+  "civil_version": "Civil 3D 2020-2027"
+}
