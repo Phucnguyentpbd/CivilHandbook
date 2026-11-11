@@ -714,6 +714,7 @@
       document.getElementById("formCause").value = "";
       document.getElementById("formSteps").value = "";
       document.getElementById("formWarnings").value = "";
+      document.getElementById("formCivilVersion").value = "Mọi phiên bản Civil 3D (2020-2027)";
       document.getElementById("editorModal").classList.remove("hidden");
     }
 
@@ -737,6 +738,7 @@
         if (c.civil_groups && c.civil_groups.length > 0) {
           document.getElementById("formCivilGroup").value = c.civil_groups[0];
         }
+        document.getElementById("formCivilVersion").value = meta.civil_version || "Mọi phiên bản Civil 3D (2020-2027)";
 
         document.getElementById("editorModal").classList.remove("hidden");
       } catch (e) {
@@ -757,7 +759,7 @@
       const steps = document.getElementById("formSteps").value.trim();
       const warningsText = document.getElementById("formWarnings").value.trim();
       const group = document.getElementById("formCivilGroup").value;
-      const civilVersion = document.getElementById("formCivilVersion").value.trim();
+      const civil_version = document.getElementById("formCivilVersion").value.trim();
 
       if (!title || !summary || !problem) {
         showToast("Vui lòng điền đủ Tiêu đề, Tóm tắt và Vấn đề!", "warning");
@@ -787,7 +789,15 @@
           const data = await res.json();
           if (!res.ok) throw new Error(data.detail || "Lỗi tạo ca mới");
 
-          showToast(`✅ Đã lưu ${data.case_id} & đồng bộ GitHub thành công!`, "success");
+          if (data.git_sync?.status === "pushed") {
+            showToast(`✅ Đã lưu ${data.case_id} & đẩy GitHub thành công!`, "success");
+          } else if (data.git_sync?.status === "committed_local") {
+            showToast(`💾 Đã lưu ${data.case_id} cục bộ (chưa cấu hình Git remote).`, "info");
+          } else if (data.git_sync?.status === "push_pending") {
+            showToast(`⚠️ Đã lưu ${data.case_id} cục bộ; Git push bị lỗi: ${data.git_sync.error || data.git_sync.message}`, "warning");
+          } else {
+            showToast(`✅ Đã lưu ${data.case_id}!`, "success");
+          }
           closeEditorModal();
           await loadCasesList();
           selectCase(data.case_id);
@@ -807,7 +817,15 @@
           const data = await res.json();
           if (!res.ok) throw new Error(data.detail || "Lỗi cập nhật ca");
 
-          showToast(`✅ Đã cập nhật ${editingCaseId} lên Rev ${data.revision}!`, "success");
+          if (data.git_sync?.status === "pushed") {
+            showToast(`✅ Đã cập nhật ${editingCaseId} lên Rev ${data.revision} & đẩy GitHub thành công!`, "success");
+          } else if (data.git_sync?.status === "committed_local") {
+            showToast(`💾 Đã cập nhật ${editingCaseId} lên Rev ${data.revision} cục bộ.`, "info");
+          } else if (data.git_sync?.status === "push_pending") {
+            showToast(`⚠️ Đã cập nhật ${editingCaseId} (Rev ${data.revision}); Git push bị lỗi: ${data.git_sync.error || data.git_sync.message}`, "warning");
+          } else {
+            showToast(`✅ Đã cập nhật ${editingCaseId} lên Rev ${data.revision}!`, "success");
+          }
           closeEditorModal();
           await loadCasesList();
           selectCase(editingCaseId);

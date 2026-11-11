@@ -102,19 +102,20 @@ class UpdateCasePayload(BaseModel):
     title: str
     summary: str
     problem: str
-    context: str = "Autodesk Civil 3D"
-    cause: str = ""
-    cause_is_hypothesis: bool = False
-    steps: str = ""
-    result: str = ""
-    warnings: list[str] = Field(default_factory=list)
-    civil_groups: list[str] = Field(default_factory=list)
-    tags: list[str] = Field(default_factory=list)
-    aliases: list[str] = Field(default_factory=list)
-    plugins: list[str] = Field(default_factory=list)
-    verification: str = "verified_live"
-    civil_version: Optional[str] = "Civil 3D 2020-2027"
+    context: Optional[str] = None
+    cause: Optional[str] = None
+    cause_is_hypothesis: Optional[bool] = None
+    steps: Optional[str] = None
+    result: Optional[str] = None
+    warnings: Optional[list[str]] = None
+    civil_groups: Optional[list[str]] = None
+    tags: Optional[list[str]] = None
+    aliases: Optional[list[str]] = None
+    plugins: Optional[list[str]] = None
+    verification: Optional[str] = None
+    civil_version: Optional[str] = None
     project: Optional[str] = None
+    sensitivity: Optional[str] = None
 
 
 class ClipboardUploadPayload(BaseModel):
@@ -364,7 +365,7 @@ def create_case(payload: CreateCasePayload) -> dict[str, Any]:
 def update_case(case_id: str, payload: UpdateCasePayload) -> dict[str, Any]:
     """Cập nhật một ca kinh nghiệm (tạo Revision mới) và tự động Push GitHub."""
     try:
-        old_meta, _ = get_case(case_id)
+        old_meta, old_content = get_case(case_id)
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail=f"Không tìm thấy ca {case_id}")
 
@@ -376,18 +377,95 @@ def update_case(case_id: str, payload: UpdateCasePayload) -> dict[str, Any]:
 
     now = datetime.now(timezone.utc)
     new_rev = old_meta.revision + 1
+    idempotency_key = f"web-revise-{case_id}-rev{new_rev}-{uuid.uuid4().hex[:8]}"
 
-    cg_enums = []
-    for g in payload.civil_groups:
-        try:
-            cg_enums.append(CivilTaxonomy(g))
-        except ValueError:
-            pass
+    # Bảo tồn và sáp nhập civil_groups:
+    # Nếu form truyền civil_groups, đưa các nhóm được chọn lên đầu và giữ nguyên các nhóm cũ còn lại
+    if payload.civil_groups is not None:
+        selected_cgs: list[CivilTaxonomy] = []
+        for g in payload.civil_groups:
+            try:
+                cg = CivilTaxonomy(g)
+                if cg not in selected_cgs:
+                    selected_cgs.append(cg)
+            except ValueError:
+                pass
+        merged_cgs = list(selected_cgs)
+        for old_cg in (old_meta.civil_groups or []):
+            if old_cg not in merged_cgs:
+                merged_cgs.append(old_cg)
+        if not merged_cgs and old_meta.civil_groups:
+            merged_cgs = list(old_meta.civil_groups)
+    else:
+        merged_cgs = list(old_meta.civil_groups or [])
 
-    ver_enum = (
-        VerificationStatus(payload.verification)
-        if payload.verification in VerificationStatus._value2member_map_
-        else VerificationStatus.verified_live
+    if payload.verification:
+        ver_enum = (
+            VerificationStatus(payload.verification)
+            if payload.verification in VerificationStatus._value2member_map_
+            else old_meta.verification
+        )
+    else:
+        ver_enum = old_meta.verification
+
+    # Bảo tồn các trường nội dung không có trên form Web hoặc chỉ truyền mặc định
+    new_context = (
+        payload.context.strip()
+        if (payload.context is not None and payload.context.strip() and payload.context.strip() != "Autodesk Civil 3D")
+        else (old_content.context or payload.context or "Autodesk Civil 3D")
+    )
+    new_cause = (
+        payload.cause.strip()
+        if payload.cause is not None
+        else old_content.cause
+    )
+    new_cause_is_hypothesis = (
+        payload.cause_is_hypothesis
+        if payload.cause_is_hypothesis is not None
+        else old_content.cause_is_hypothesis
+    )
+    new_steps = (
+        payload.steps.strip()
+        if payload.steps is not None
+        else old_content.steps
+    )
+    new_result = (
+        payload.result.strip()
+        if (payload.result is not None and payload.result.strip())
+        else old_content.result
+    )
+    new_warnings = (
+        payload.warnings
+        if payload.warnings is not None
+        else old_content.warnings
+    )
+    new_tags = (
+        payload.tags
+        if (payload.tags is not None and len(payload.tags) > 0)
+        else old_content.tags
+    )
+    new_aliases = (
+        payload.aliases
+        if (payload.aliases is not None and len(payload.aliases) > 0)
+        else old_content.aliases
+    )
+
+    if payload.plugins is not None and len(payload.plugins) > 0:
+        new_content_plugins = [{"name": p} if isinstance(p, str) else p for p in payload.plugins]
+        new_meta_plugins = payload.plugins
+    else:
+        new_content_plugins = old_content.plugins
+        new_meta_plugins = old_meta.plugins
+
+    new_sensitivity = (
+        payload.sensitivity
+        if payload.sensitivity is not None
+        else old_content.sensitivity
+    )
+    new_revision_reason = (
+        payload.revision_reason.strip()
+        if payload.revision_reason
+        else "Cập nhật qua Civil Notebook Web"
     )
 
     content = RevisionContent(
@@ -396,30 +474,40 @@ def update_case(case_id: str, payload: UpdateCasePayload) -> dict[str, Any]:
         title=payload.title.strip(),
         summary=payload.summary.strip(),
         problem=payload.problem.strip(),
-        context=payload.context.strip(),
-        cause=payload.cause.strip(),
-        cause_is_hypothesis=payload.cause_is_hypothesis,
-        steps=payload.steps.strip(),
-        result=payload.result.strip(),
-        warnings=payload.warnings,
-        civil_groups=cg_enums,
-        tags=payload.tags,
-        aliases=payload.aliases,
-        plugins=[{"name": p} for p in payload.plugins],
+        context=new_context,
+        cause=new_cause,
+        cause_is_hypothesis=new_cause_is_hypothesis,
+        steps=new_steps,
+        result=new_result,
+        failed_attempts=old_content.failed_attempts,
+        warnings=new_warnings,
+        scope_notes=old_content.scope_notes,
+        undo_procedure=old_content.undo_procedure,
+        civil_groups=merged_cgs,
+        aliases=new_aliases,
+        tags=new_tags,
+        plugins=new_content_plugins,
+        sources=old_content.sources,
+        related_to=old_content.related_to,
+        conflicts_with=old_content.conflicts_with,
+        supersedes=old_content.supersedes,
+        sensitivity=new_sensitivity,
         created_at=now,
-        revision_reason=payload.revision_reason.strip(),
+        revision_reason=new_revision_reason,
     )
 
     metadata = old_meta.model_copy(
         update={
             "revision": new_rev,
+            "idempotency_key": idempotency_key,
             "title": payload.title.strip(),
             "verification": ver_enum,
-            "civil_groups": cg_enums,
-            "plugins": payload.plugins,
+            "civil_groups": merged_cgs,
+            "plugins": new_meta_plugins,
             "updated_at": now,
-            "civil_version": payload.civil_version,
-            "project": payload.project,
+            "civil_version": payload.civil_version if payload.civil_version is not None else old_meta.civil_version,
+            "project": payload.project if payload.project is not None else old_meta.project,
+            "sensitivity": new_sensitivity,
         }
     )
 
